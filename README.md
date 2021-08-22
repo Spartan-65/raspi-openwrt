@@ -1,11 +1,26 @@
-**English** | [中文](https://p3terx.com/archives/build-openwrt-with-github-actions.html)
+# raspi-openwrt
+
+
+[![Build OpenWrt](https://github.com/Spartan-65/raspi-openwrt/actions/workflows/build-openwrt.yml/badge.svg)](https://github.com/Spartan-65/raspi-openwrt/actions/workflows/build-openwrt.yml)
+
+## run on raspi 4
+
+```bash
+cd local-deploy
+./bind-eth0-prefix24.sh
+```
+### result
+
+```bash
+CONTAINER ID   IMAGE                   COMMAND                  CREATED              STATUS              PORTS      NAMES
+339c388818bd   my-openwrt:latest       "/sbin/init"             About a minute ago   Up About a minute              openwrt
+```
 
 # Actions-OpenWrt
 
 [![LICENSE](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square&label=LICENSE)](https://github.com/P3TERX/Actions-OpenWrt/blob/master/LICENSE)
 ![GitHub Stars](https://img.shields.io/github/stars/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Stars&logo=github)
 ![GitHub Forks](https://img.shields.io/github/forks/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Forks&logo=github)
-[![Build OpenWrt](https://github.com/Spartan-65/raspi-openwrt/actions/workflows/build-openwrt.yml/badge.svg)](https://github.com/Spartan-65/raspi-openwrt/actions/workflows/build-openwrt.yml)
 
 A template for building OpenWrt with GitHub Actions
 
