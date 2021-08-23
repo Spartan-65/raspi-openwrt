@@ -9,12 +9,18 @@
 cd local-deploy
 ./bind-eth0-prefix24.sh
 ```
+
 ### result
 
 ```bash
 CONTAINER ID   IMAGE                   COMMAND                  CREATED              STATUS              PORTS      NAMES
 339c388818bd   my-openwrt:latest       "/sbin/init"             About a minute ago   Up About a minute              openwrt
 ```
+
+## Thanks
+
+- [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)
+- [SuLingGG/OpenWrt-Docker](https://github.com/SuLingGG/OpenWrt-Docker)
 
 # Actions-OpenWrt
 
