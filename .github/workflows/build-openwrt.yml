@@ -20,12 +20,15 @@ env:
   SUBTARGET: bcm2711
   PLATFORM: aarch64_cortex-a72
   ARCH: linux/arm64
-  CLASH_ARCH: armv8
   IMAGE_TAG: latest
   TZ: Asia/Shanghai
+  TARGET_X86: x86
+  SUBTARGET_64: 64
+  PLATFORM_x86: x86_64
+  ARCH_64: linux/amd64
 
 jobs:
-  Publish:
+  bcm2711:
     runs-on: ubuntu-20.04
 
     steps:
@@ -88,6 +91,75 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         platforms: ${{ env.ARCH }}
+        file: Dockerfile
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:${{ env.IMAGE_TAG }}
+
+  x86_64:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Initialization Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+
+
+    - name: Set Up QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set Up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login To DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PWD }}
+
+    - name: Download Image Builder
+      run: |
+        wget -q $PREFIX_URL/$TARGET_X86/$SUBTARGET_64/openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64.tar.xz
+        wget -q https://raw.githubusercontent.com/coolsnowwolf/lede/master/package/lean/autocore/files/arm/index.htm -O ./files/etc/index.htm
+
+    - name: Load Custom Configuration
+      run: |
+        sed -i "s/subtarget/$SUBTARGET_64/g" files/etc/opkg/distfeeds.conf
+        sed -i "s/target\//$TARGET_X86\//g" files/etc/opkg/distfeeds.conf
+        sed -i "s/platform/$PLATFORM_x86/g" files/etc/opkg/distfeeds.conf
+        tar -xJf *.tar.xz
+        rm *.tar.xz
+        cd openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64
+        sed -i 's/kmod-/-kmod-/g' include/target.mk
+        sed -i 's/luci-app-sfe//g' include/target.mk
+        sed -i 's/kmod-/-kmod-/g' target/linux/$TARGET_X86/Makefile
+        cp -rf ../files .
+
+    - name: Build RootFS
+      run: |
+        sed -i 's/autocore/autocore-arm/g' config/packages.config
+        sed -i 's/luci-i18n-adbyby-plus-zh-cn //g' config/packages.config
+        export packages=$(cat config/packages.config)
+        cd openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64
+        make image PACKAGES="$packages" FILES=files/
+        cp bin/targets/$TARGET_X86/$SUBTARGET_64/*rootfs.tar.gz ..
+        cd ..
+        rm -rf openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64
+
+    - name: Build & Push Multiarch Image
+      uses: docker/build-push-action@v2
+      with:
+        platforms: ${{ env.ARCH_64 }}
         file: Dockerfile
         context: .
         push: true
