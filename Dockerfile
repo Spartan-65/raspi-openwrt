@@ -1,3 +1,3 @@
-From scratch
+FROM scratch
 
 ADD *.tar.gz /

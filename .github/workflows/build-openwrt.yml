@@ -14,22 +14,21 @@ on:
   push:
     branches:
       - main
+
 env:
   PREFIX_URL: https://openwrt.cc/releases/targets
-  TARGET: bcm27xx
-  SUBTARGET: bcm2711
-  PLATFORM: aarch64_cortex-a72
-  ARCH: linux/arm64
-  IMAGE_TAG: latest
-  TZ: Asia/Shanghai
-  TARGET_X86: x86
-  SUBTARGET_64: 64
-  PLATFORM_x86: x86_64
-  ARCH_64: linux/amd64
 
 jobs:
   bcm2711:
     runs-on: ubuntu-20.04
+
+    env:
+      TARGET: bcm27xx
+      SUBTARGET: bcm2711
+      PLATFORM: aarch64_cortex-a72
+      ARCH: linux/arm64
+      IMAGE_TAG: arm64
+      TZ: Asia/Shanghai
 
     steps:
     - name: Checkout
@@ -99,7 +98,14 @@ jobs:
 
   x86_64:
     env:
+      TARGET: x86
+      SUBTARGET: 64
+      PLATFORM: x86_64
+      ARCH: linux/amd64
       CLASH_ARCH: amd64
+      IMAGE_TAG: x86_64
+      TZ: Asia/Shanghai
+
     runs-on: ubuntu-20.04
 
     steps:
@@ -132,35 +138,32 @@ jobs:
 
     - name: Download Image Builder
       run: |
-        wget -q $PREFIX_URL/$TARGET_X86/$SUBTARGET_64/openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64.tar.xz
+        wget -q $PREFIX_URL/$TARGET/$SUBTARGET/openwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64.tar.xz
         wget -q https://raw.githubusercontent.com/coolsnowwolf/lede/master/package/lean/autocore/files/arm/index.htm -O ./files/etc/index.htm
     - name: Load Custom Configuration
       run: |
-        sed -i "s/subtarget/$SUBTARGET_64/g" files/etc/opkg/distfeeds.conf
-        sed -i "s/target\//$TARGET_X86\//g" files/etc/opkg/distfeeds.conf
+        sed -i "s/subtarget/$SUBTARGET/g" files/etc/opkg/distfeeds.conf
+        sed -i "s/target\//$TARGET\//g" files/etc/opkg/distfeeds.conf
         sed -i "s/platform/$PLATFORM/g" files/etc/opkg/distfeeds.conf
-        chmod +x scripts/*
-        ./scripts/preset-clash-core.sh
-        ./scripts/preset-terminal-tools.sh
         tar -xJf *.tar.xz
         rm *.tar.xz
-        cd openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64
+        cd openwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64
         sed -i 's/kmod-/-kmod-/g' include/target.mk
         sed -i 's/luci-app-sfe//g' include/target.mk
         sed -i 's/-luci-app-sfe//g' include/target.mk
         sed -i 's/luci-app-flowoffload//g' include/target.mk
         sed -i 's/luci-app-qbittorrent//g' target/linux/x86/Makefile
-        sed -i 's/kmod-/-kmod-/g' target/linux/$TARGET_X86/Makefile
+        sed -i 's/kmod-/-kmod-/g' target/linux/$TARGET/Makefile
         cp -rf ../files .
     - name: Build RootFS
       run: |
         sed -i 's/autocore/autocore-x86/g' config/packages.config
         export packages=$(cat ./config/packages.config)
-        cd openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64
+        cd openwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64
         make image PACKAGES="$packages" FILES=files/
-        cp bin/targets/$TARGET_X86/$SUBTARGET_64/*rootfs.tar.gz ..
+        cp bin/targets/$TARGET/$SUBTARGET/*rootfs.tar.gz ..
         cd ..
-        rm -rf openwrt-imagebuilder-$TARGET_X86-$SUBTARGET_64.Linux-x86_64
+        rm -rf openwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64
 
     - name: Build & Push Multiarch Image
       uses: docker/build-push-action@v2
