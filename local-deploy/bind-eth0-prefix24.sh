@@ -24,13 +24,14 @@ docker_build(){
 }
 
 docker_run(){
-    docker run --restart always --name openwrt -d --network macnet --privileged my-openwrt:latest /sbin/init
+    docker stop openwrt || docker rm openwrt
+    docker run --restart unless-stopped --name openwrt -d --network macnet --privileged my-openwrt:latest /sbin/init
 }
 
 docker_run_test(){
     docker run --rm --name openwrt -it --network macnet --privileged my-openwrt:latest /bin/bash
 }
-#docker_network_create
+docker_network_create
 docker_build
 docker_run
 

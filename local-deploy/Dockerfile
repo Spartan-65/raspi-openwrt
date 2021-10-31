@@ -1,4 +1,4 @@
-ARG TAG=latest
+ARG TAG=arm64
 FROM spartan65/openwrt:$TAG
 
 ARG IPADDR=192.168.0.101
