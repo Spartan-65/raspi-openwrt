@@ -85,7 +85,7 @@ jobs:
       run: |
         sed -i 's/autocore/autocore-arm/g' config/packages.config
         sed -i 's/luci-i18n-adbyby-plus-zh-cn //g' config/packages.config
-        export packages=$(cat config/packages-x86.config)
+        export packages=$(cat config/packages.config)
         cd immortalwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64
         make image PACKAGES="$packages" FILES=files/
         cp bin/targets/$TARGET/$SUBTARGET/*rootfs.tar.gz ..
@@ -156,6 +156,7 @@ jobs:
         cd immortalwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64
         sed -i 's/kmod-/-kmod-/g' include/target.mk
         sed -i 's/luci-app-sfe//g' include/target.mk
+        sed -i 's/luci-app-cpufreq//g' include/target.mk
         sed -i 's/luci-app-unblockmusic//g' include/target.mk
         sed -i 's/luci-app-nlbwmon//g' include/target.mk
         sed -i 's/-luci-app-sfe//g' include/target.mk
@@ -166,7 +167,7 @@ jobs:
     - name: Build RootFS
       run: |
         sed -i 's/autocore/autocore-x86/g' config/packages.config
-        export packages=$(cat ./config/packages.config)
+        export packages=$(cat ./config/packages-x86.config)
         cd immortalwrt-imagebuilder-$TARGET-$SUBTARGET.Linux-x86_64
         make image PACKAGES="$packages" FILES=files/
         cp bin/targets/$TARGET/$SUBTARGET/*rootfs.tar.gz ..
