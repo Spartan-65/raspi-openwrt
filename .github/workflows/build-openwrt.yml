@@ -27,7 +27,7 @@ jobs:
       SUBTARGET: bcm2711
       PLATFORM: aarch64_cortex-a72
       ARCH: linux/arm64
-      IMAGE_TAG: arm64
+      IMAGE_TAG: aarch64
       TZ: Asia/Shanghai
 
     steps:
