@@ -13,7 +13,7 @@ name: Build OpenWrt
 on:
   push:
     tags:
-      - "**"
+      - "*"
 
 env:
   PREFIX_URL: https://openwrt.cc/releases/targets
